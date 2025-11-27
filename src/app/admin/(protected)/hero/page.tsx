@@ -48,7 +48,7 @@ export default function HeroAdminPage() {
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     if (!files || files.length === 0) {
-      alert("Pilih gambar terlebih dahulu");
+      window.alert("Pilih gambar terlebih dahulu");
       return;
     }
     setSaving(true);
@@ -68,7 +68,7 @@ export default function HeroAdminPage() {
         .upload(filePath, file);
 
       if (uploadRes.error) {
-        alert("Gagal mengunggah salah satu gambar");
+        window.alert("Gagal mengunggah salah satu gambar");
         continue;
       }
 
@@ -84,7 +84,7 @@ export default function HeroAdminPage() {
       });
 
       if (error) {
-        alert("Gagal menyimpan salah satu slide");
+        window.alert("Gagal menyimpan salah satu slide");
       }
     }
 
@@ -110,7 +110,7 @@ export default function HeroAdminPage() {
   async function handleProfileUpload(e: React.FormEvent) {
     e.preventDefault();
     if (!profileFile) {
-      alert("Pilih gambar terlebih dahulu");
+      window.alert("Pilih gambar terlebih dahulu");
       return;
     }
 
@@ -125,7 +125,7 @@ export default function HeroAdminPage() {
       .upload(filePath, profileFile);
 
     if (uploadRes.error) {
-      alert("Gagal mengunggah gambar");
+      window.alert("Gagal mengunggah gambar");
       setProfileSaving(false);
       return;
     }
@@ -165,18 +165,14 @@ export default function HeroAdminPage() {
             <p className="text-sm font-semibold text-slate-600">
               Gambar Slider Hero
             </p>
-            <label className="flex cursor-pointer items-center justify-between rounded-2xl border border-dashed border-blue-300 bg-white px-4 py-3 text-sm font-semibold text-blue-600 shadow-sm transition hover:border-blue-400">
-              <span>
-                {files && files.length > 0
-                  ? `${files.length} file dipilih`
-                  : "Pilih gambar (boleh banyak)"}
-              </span>
+            <label className="block">
+              <span className="sr-only">Pilih gambar hero</span>
               <input
                 type="file"
                 accept="image/*"
                 multiple
                 onChange={(e) => setFiles(e.target.files)}
-                className="hidden"
+                className="w-full cursor-pointer rounded-2xl border border-dashed border-slate-300 bg-white px-3 py-3 text-sm text-slate-600 file:mr-4 file:rounded-full file:border-0 file:bg-blue-600 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:border-blue-200"
               />
             </label>
             <button
@@ -206,13 +202,13 @@ export default function HeroAdminPage() {
                 Belum ada foto. Unggah untuk menampilkan gambar di bagian profil landing.
               </p>
             )}
-            <label className="flex cursor-pointer items-center justify-between rounded-2xl border border-dashed border-blue-300 bg-white px-4 py-3 text-sm font-semibold text-blue-600 shadow-sm transition hover:border-blue-400">
-              <span>{profileFile ? profileFile.name : "Pilih satu gambar"}</span>
+            <label className="block">
+              <span className="sr-only">Pilih foto profil</span>
               <input
                 type="file"
                 accept="image/*"
                 onChange={(e) => setProfileFile(e.target.files?.[0] ?? null)}
-                className="hidden"
+                className="w-full cursor-pointer rounded-2xl border border-dashed border-slate-300 bg-white px-3 py-3 text-sm text-slate-600 file:mr-4 file:rounded-full file:border-0 file:bg-blue-600 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:border-blue-200"
               />
             </label>
             <button
