@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useParams, useRouter } from "next/navigation";
+import { Alert, Confirm } from "@/components/Alert";
 
 export default function FotoKegiatanPage() {
   const params = useParams<{ id: string }>();
@@ -13,6 +14,8 @@ export default function FotoKegiatanPage() {
   const [existingFotos, setExistingFotos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [alert, setAlert] = useState<{ message: string; type?: "info" | "success" | "error" | "warning" } | null>(null);
+  const [confirm, setConfirm] = useState<{ message: string; onConfirm: () => void } | null>(null);
 
   async function loadFotos() {
     const { data, error } = await supabase
@@ -35,7 +38,7 @@ export default function FotoKegiatanPage() {
 
   async function uploadFotos() {
     if (!files || files.length === 0) {
-      alert("Pilih minimal 1 foto");
+      setAlert({ message: "Pilih minimal 1 foto", type: "warning" });
       return;
     }
 
@@ -72,14 +75,18 @@ export default function FotoKegiatanPage() {
     setUploading(false);
     setFiles(null);
     await loadFotos();
-    alert("Foto berhasil diupload!");
+    setAlert({ message: "Foto berhasil diupload!", type: "success" });
   }
 
   async function deleteFoto(id: number) {
-    if (!confirm("Hapus foto ini?")) return;
-
-    await supabase.from("kegiatan_foto").delete().eq("id", id);
-    await loadFotos();
+    setConfirm({
+      message: "Hapus foto ini?",
+      onConfirm: async () => {
+        await supabase.from("kegiatan_foto").delete().eq("id", id);
+        await loadFotos();
+        setConfirm(null);
+      },
+    });
   }
 
   if (!kegiatan_id) {
@@ -110,7 +117,7 @@ export default function FotoKegiatanPage() {
             accept="image/*"
             multiple
             onChange={(e) => setFiles(e.target.files)}
-            className="mt-2 w-full rounded-2xl border border-dashed border-slate-300 px-3 py-2 text-sm file:mr-4 file:rounded-xl file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100"
+            className="mt-2 w-full cursor-pointer rounded-2xl border border-dashed border-slate-300 bg-white px-3 py-3 text-sm text-slate-600 file:mr-4 file:rounded-full file:border-0 file:bg-blue-600 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:border-blue-200"
           />
         </div>
 
@@ -150,6 +157,22 @@ export default function FotoKegiatanPage() {
           </div>
         )}
       </div>
+
+      {alert && (
+        <Alert
+          message={alert.message}
+          type={alert.type}
+          onClose={() => setAlert(null)}
+        />
+      )}
+
+      {confirm && (
+        <Confirm
+          message={confirm.message}
+          onConfirm={confirm.onConfirm}
+          onCancel={() => setConfirm(null)}
+        />
+      )}
     </div>
   );
 }

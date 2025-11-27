@@ -2,6 +2,7 @@
 
 import { supabase } from "@/lib/supabaseClient";
 import { useEffect, useState } from "react";
+import { Alert, Confirm } from "@/components/Alert";
 
 type Slide = {
   id: number;
@@ -18,6 +19,8 @@ export default function HeroAdminPage() {
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [profileFile, setProfileFile] = useState<File | null>(null);
   const [profileSaving, setProfileSaving] = useState(false);
+  const [alert, setAlert] = useState<{ message: string; type?: "info" | "success" | "error" | "warning" } | null>(null);
+  const [confirm, setConfirm] = useState<{ message: string; onConfirm: () => void } | null>(null);
 
   async function loadSlides() {
     setLoading(true);
@@ -48,7 +51,7 @@ export default function HeroAdminPage() {
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
     if (!files || files.length === 0) {
-      window.alert("Pilih gambar terlebih dahulu");
+      setAlert({ message: "Pilih gambar terlebih dahulu", type: "warning" });
       return;
     }
     setSaving(true);
@@ -68,7 +71,7 @@ export default function HeroAdminPage() {
         .upload(filePath, file);
 
       if (uploadRes.error) {
-        window.alert("Gagal mengunggah salah satu gambar");
+        setAlert({ message: "Gagal mengunggah salah satu gambar", type: "error" });
         continue;
       }
 
@@ -84,7 +87,7 @@ export default function HeroAdminPage() {
       });
 
       if (error) {
-        window.alert("Gagal menyimpan salah satu slide");
+        setAlert({ message: "Gagal menyimpan salah satu slide", type: "error" });
       }
     }
 
@@ -94,9 +97,14 @@ export default function HeroAdminPage() {
   }
 
   async function handleDelete(id: number) {
-    if (!confirm("Hapus slide ini?")) return;
-    await supabase.from("landing_images").delete().eq("id", id);
-    await loadSlides();
+    setConfirm({
+      message: "Hapus slide ini?",
+      onConfirm: async () => {
+        await supabase.from("landing_images").delete().eq("id", id);
+        await loadSlides();
+        setConfirm(null);
+      },
+    });
   }
 
   async function toggleActive(slide: Slide) {
@@ -110,7 +118,7 @@ export default function HeroAdminPage() {
   async function handleProfileUpload(e: React.FormEvent) {
     e.preventDefault();
     if (!profileFile) {
-      window.alert("Pilih gambar terlebih dahulu");
+      setAlert({ message: "Pilih gambar terlebih dahulu", type: "warning" });
       return;
     }
 
@@ -125,7 +133,7 @@ export default function HeroAdminPage() {
       .upload(filePath, profileFile);
 
     if (uploadRes.error) {
-      window.alert("Gagal mengunggah gambar");
+      setAlert({ message: "Gagal mengunggah gambar", type: "error" });
       setProfileSaving(false);
       return;
     }
@@ -147,6 +155,7 @@ export default function HeroAdminPage() {
     setProfileFile(null);
     await loadProfileImage();
     setProfileSaving(false);
+    setAlert({ message: "Foto profil berhasil diupdate", type: "success" });
   }
 
   return (
@@ -243,7 +252,7 @@ export default function HeroAdminPage() {
                 {slide.image_url && (
                   <img
                     src={slide.image_url}
-                    alt={slide.headline ?? "Slide"}
+                    alt="Slide hero"
                     className="h-48 w-full rounded-t-3xl object-cover"
                   />
                 )}
@@ -278,6 +287,22 @@ export default function HeroAdminPage() {
           </div>
         )}
       </section>
+
+      {alert && (
+        <Alert
+          message={alert.message}
+          type={alert.type}
+          onClose={() => setAlert(null)}
+        />
+      )}
+
+      {confirm && (
+        <Confirm
+          message={confirm.message}
+          onConfirm={confirm.onConfirm}
+          onCancel={() => setConfirm(null)}
+        />
+      )}
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { Alert } from "@/components/Alert";
 
 export default function TambahDenah() {
   const router = useRouter();
@@ -13,6 +14,7 @@ export default function TambahDenah() {
   const [file, setFile] = useState<File | null>(null);
 
   const [uploading, setUploading] = useState(false);
+  const [alert, setAlert] = useState<{ message: string; type?: "info" | "success" | "error" | "warning" } | null>(null);
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
@@ -31,7 +33,7 @@ export default function TambahDenah() {
         .upload(filePath, file);
 
       if (uploadError) {
-        alert("Gagal upload file");
+        setAlert({ message: "Gagal upload file", type: "error" });
         setUploading(false);
         return;
       }
@@ -52,11 +54,14 @@ export default function TambahDenah() {
     });
 
     if (error) {
-      alert("Gagal menyimpan");
+      setAlert({ message: "Gagal menyimpan", type: "error" });
       return;
     }
 
-    router.push("/admin/denah");
+    setAlert({ message: "Denah berhasil disimpan", type: "success" });
+    setTimeout(() => {
+      router.push("/admin/denah");
+    }, 1000);
   }
 
   return (
@@ -78,7 +83,7 @@ export default function TambahDenah() {
             type="file"
             accept="image/*,.pdf"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            className="mt-2 w-full rounded-2xl border border-dashed border-slate-300 px-3 py-2 text-sm file:mr-4 file:rounded-xl file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100"
+            className="mt-2 w-full cursor-pointer rounded-2xl border border-dashed border-slate-300 bg-white px-3 py-3 text-sm text-slate-600 file:mr-4 file:rounded-full file:border-0 file:bg-blue-600 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:border-blue-200"
           />
         </div>
 
@@ -98,6 +103,14 @@ export default function TambahDenah() {
           </button>
         </div>
       </form>
+
+      {alert && (
+        <Alert
+          message={alert.message}
+          type={alert.type}
+          onClose={() => setAlert(null)}
+        />
+      )}
     </div>
   );
 }

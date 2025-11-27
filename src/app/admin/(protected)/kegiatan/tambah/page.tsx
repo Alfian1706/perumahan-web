@@ -3,6 +3,7 @@
 import { supabase } from "@/lib/supabaseClient";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Alert } from "@/components/Alert";
 
 export default function TambahKegiatan() {
   const router = useRouter();
@@ -15,6 +16,7 @@ export default function TambahKegiatan() {
 
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [alert, setAlert] = useState<{ message: string; type?: "info" | "success" | "error" | "warning" } | null>(null);
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
@@ -33,7 +35,7 @@ export default function TambahKegiatan() {
         .upload(filePath, file);
 
       if (uploadError) {
-        alert("Gagal upload cover kegiatan");
+        setAlert({ message: "Gagal upload cover kegiatan", type: "error" });
         setUploading(false);
         return;
       }
@@ -65,11 +67,14 @@ export default function TambahKegiatan() {
     setSaving(false);
 
     if (error) {
-      alert("Gagal menyimpan kegiatan");
+      setAlert({ message: "Gagal menyimpan kegiatan", type: "error" });
       return;
     }
 
-    router.push("/admin/kegiatan");
+    setAlert({ message: "Kegiatan berhasil disimpan", type: "success" });
+    setTimeout(() => {
+      router.push("/admin/kegiatan");
+    }, 1000);
   }
 
   return (
@@ -101,7 +106,7 @@ export default function TambahKegiatan() {
             type="file"
             accept="image/*"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-            className="w-full rounded-2xl border border-dashed border-slate-300 px-3 py-2 text-sm file:mr-4 file:rounded-xl file:border-0 file:bg-blue-50 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-blue-700 hover:file:bg-blue-100"
+            className="w-full cursor-pointer rounded-2xl border border-dashed border-slate-300 bg-white px-3 py-3 text-sm text-slate-600 file:mr-4 file:rounded-full file:border-0 file:bg-blue-600 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:border-blue-200"
           />
           {uploading && <p className="text-xs text-blue-600">Mengupload cover...</p>}
         </div>
@@ -122,6 +127,14 @@ export default function TambahKegiatan() {
           </button>
         </div>
       </form>
+
+      {alert && (
+        <Alert
+          message={alert.message}
+          type={alert.type}
+          onClose={() => setAlert(null)}
+        />
+      )}
     </div>
   );
 }
